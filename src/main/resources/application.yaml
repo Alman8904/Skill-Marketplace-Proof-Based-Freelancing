@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: SM
+
+  datasource:
+    url: jdbc:postgresql://localhost:8000/SM
+    username: postgres
+    password: 890400
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+  flyway:
+    enabled: false
+
+#  autoconfigure:
+#    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
