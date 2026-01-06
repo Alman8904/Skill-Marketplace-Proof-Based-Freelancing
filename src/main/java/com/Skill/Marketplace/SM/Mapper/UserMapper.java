@@ -1,4 +1,5 @@
-package com.Skill.Marketplace.SM.DTO.userDTO;
+package com.Skill.Marketplace.SM.Mapper;
+import com.Skill.Marketplace.SM.DTO.userDTO.ResponseToUser;
 import com.Skill.Marketplace.SM.Entities.UserModel;
 import org.springframework.stereotype.Component;
 

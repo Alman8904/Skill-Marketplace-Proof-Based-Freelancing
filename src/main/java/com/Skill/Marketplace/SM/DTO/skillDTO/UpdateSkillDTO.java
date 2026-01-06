@@ -3,6 +3,6 @@ import lombok.Data;
 
 @Data
 public class UpdateSkillDTO {
-    private String name;
+    private String SkillName;
     private Long categoryId;
 }

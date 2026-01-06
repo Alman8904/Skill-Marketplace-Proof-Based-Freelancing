@@ -17,7 +17,7 @@ public class CategoryService {
 
     public Category create(CreateCategoryDTO dto){
         Category category = new Category();
-        category.setCategoryName(dto.getName());
+        category.setCategoryName(dto.getCategoryName());
 
         return categoryRepo.save(category);
     }
@@ -26,7 +26,7 @@ public class CategoryService {
         Category existingCategory = categoryRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        existingCategory.setCategoryName(dto.getName());
+        existingCategory.setCategoryName(dto.getCategoryName());
         return categoryRepo.save(existingCategory);
 
     }

@@ -11,6 +11,7 @@ public class UserSkills {
     private Long userSkillId;
     private String skillLevel;
     private double rate;
+    private double experience;
 
     @ManyToOne
     @JoinColumn(name="user_id")

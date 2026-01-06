@@ -9,5 +9,5 @@ public class ResponseToUser {
     private String firstName;
     private String lastName;
     private UserType userType;
-    private UserType roles;
+
 }
