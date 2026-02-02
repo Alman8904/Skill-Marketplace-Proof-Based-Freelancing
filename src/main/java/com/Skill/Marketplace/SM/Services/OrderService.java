@@ -1,6 +1,10 @@
 package com.Skill.Marketplace.SM.Services;
 import com.Skill.Marketplace.SM.DTO.OrderDTO.createOrderDTO;
 import com.Skill.Marketplace.SM.Entities.*;
+import com.Skill.Marketplace.SM.Exception.BadRequestException;
+import com.Skill.Marketplace.SM.Exception.ConflictException;
+import com.Skill.Marketplace.SM.Exception.ForbiddenException;
+import com.Skill.Marketplace.SM.Exception.ResourceNotFoundException;
 import com.Skill.Marketplace.SM.Repo.OrderRepo;
 import com.Skill.Marketplace.SM.Repo.SkillsRepo;
 import com.Skill.Marketplace.SM.Repo.UserRepo;
@@ -29,20 +33,20 @@ public class OrderService {
     public Order placeOrder(String username , createOrderDTO orderDTO) {
 
         UserModel consumer = userRepo.getUserByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         UserModel provider = userRepo.findById(orderDTO.getProviderId())
-                .orElseThrow(() -> new RuntimeException("Provider not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found"));
 
         if (consumer.getId().equals(provider.getId())) {
-            throw new RuntimeException("You cannot order your own service");
+            throw new BadRequestException("You cannot order your own service");
         }
 
         Skill skill = skillsRepo.findById(orderDTO.getSkillId())
-                .orElseThrow(() -> new RuntimeException("Skill not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Skill not found"));
 
         UserSkill listing = userSkillRepo.findByUserAndSkill(provider, skill)
-                .orElseThrow(() -> new RuntimeException("Provider does not offer this skill"));
+                .orElseThrow(() -> new BadRequestException("Provider does not offer this skill"));
 
         Order order = new Order();
         order.setConsumer(consumer);
@@ -60,13 +64,13 @@ public class OrderService {
     @Transactional
     public void acceptOrder(Long orderId, String username) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getProvider().getUsername().equals(username))
-            throw new RuntimeException("Not authorized");
+            throw new ForbiddenException("Not authorized");
 
         if(order.getStatus() != OrderStatus.PENDING)
-            throw new RuntimeException("Order already processed");
+            throw new ConflictException("Order already processed");
 
         order.setStatus(OrderStatus.ACCEPTED);
     }
@@ -75,11 +79,14 @@ public class OrderService {
     public void completeOrder(Long orderId, String username) {
         Order order = orderRepo.findById(orderId).orElseThrow();
 
+        Order existingOrder = orderRepo.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
         if (!order.getProvider().getUsername().equals(username))
-            throw new RuntimeException("Not authorized");
+            throw new ResourceNotFoundException("Not authorized");
 
         if(order.getStatus() != OrderStatus.ACCEPTED)
-            throw new RuntimeException("Order must be accepted first");
+            throw new ConflictException("Order must be accepted first");
 
         order.setStatus(OrderStatus.COMPLETED);
         order.setCompletedAt(LocalDateTime.now());
@@ -88,13 +95,14 @@ public class OrderService {
 
     @Transactional
     public void cancelOrder(Long orderId, String username) {
-        Order order = orderRepo.findById(orderId).orElseThrow();
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
 
         if (!order.getConsumer().getUsername().equals(username))
-            throw new RuntimeException("Not authorized");
+            throw new ForbiddenException("Not authorized");
 
         if (order.getStatus() != OrderStatus.PENDING)
-            throw new RuntimeException("Cannot cancel now");
+            throw new ConflictException("Cannot cancel now");
 
         order.setStatus(OrderStatus.CANCELLED);
 

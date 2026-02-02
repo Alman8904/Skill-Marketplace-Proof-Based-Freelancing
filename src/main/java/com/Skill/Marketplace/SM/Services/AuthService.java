@@ -24,10 +24,10 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(username, password)
         );
 
-        // FIX: Load user details
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        // FIX: Pass UserDetails, not String
+
         return jwtUtil.generateToken(userDetails);
     }
 }
