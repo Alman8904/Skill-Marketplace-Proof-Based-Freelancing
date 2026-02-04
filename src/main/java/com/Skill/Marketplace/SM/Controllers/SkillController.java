@@ -7,6 +7,8 @@ import com.Skill.Marketplace.SM.Entities.Skill;
 import com.Skill.Marketplace.SM.Services.SkillService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -51,9 +53,10 @@ public class SkillController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllSkills(){
-        List<Skill> categories = skillService.getAll();
-        List<SkillResponseDTO> response =  categories.stream().map(
+    public ResponseEntity<?> getAllSkills(Pageable pageable){
+        Page<Skill> page = skillService.getAll(pageable);
+
+        Page<SkillResponseDTO> dtoPage = page.map(
                 skill -> new SkillResponseDTO(
                         skill.getId(),
                         skill.getSkillName(),
@@ -62,8 +65,8 @@ public class SkillController {
                                 skill.getCategory().getCategoryName()
                         ) : null
                 )
-        ).toList();
-        return ResponseEntity.ok(response);
+        );
+        return ResponseEntity.ok(dtoPage);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

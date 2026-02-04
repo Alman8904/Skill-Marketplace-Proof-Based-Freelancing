@@ -1,5 +1,4 @@
 package com.Skill.Marketplace.SM.Services;
-import com.Skill.Marketplace.SM.DTO.SearchDTO.searchResultDTO;
 import com.Skill.Marketplace.SM.DTO.UserSkillDTO.updateUserSkillDTO;
 import com.Skill.Marketplace.SM.DTO.UserSkillDTO.AssignSkillDTO;
 import com.Skill.Marketplace.SM.Entities.Skill;
@@ -13,7 +12,10 @@ import com.Skill.Marketplace.SM.Repo.UserRepo;
 import com.Skill.Marketplace.SM.Repo.UserSkillRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
@@ -96,8 +98,8 @@ public class UserSkillService {
         return userSkillRepo.findByUser(user);
     }
 
-    public List<UserSkill> searchProvidersBySkill(String skillName) {
-        return userSkillRepo.searchBySkillName(skillName);
+    public Page<UserSkill> searchProvidersBySkill(String skillName, Pageable pageable) {
+        return userSkillRepo.findBySkill_SkillNameContainingIgnoreCase(skillName,pageable);
     }
 
 

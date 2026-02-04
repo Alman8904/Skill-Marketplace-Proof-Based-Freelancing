@@ -8,9 +8,10 @@ import com.Skill.Marketplace.SM.Exception.ResourceNotFoundException;
 import com.Skill.Marketplace.SM.Repo.CategoryRepo;
 import com.Skill.Marketplace.SM.Repo.SkillsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public class SkillService {
@@ -43,8 +44,8 @@ public class SkillService {
                 .orElseThrow(()->new ResourceNotFoundException("No skills found"));
     }
 
-    public List<Skill> getAll(){
-        return skillsRepo.findAll();
+    public Page<Skill> getAll(Pageable pageable){
+        return skillsRepo.findAll(pageable);
     }
 
     public Skill update(Long id , UpdateSkillDTO dto){

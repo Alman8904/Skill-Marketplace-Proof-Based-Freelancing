@@ -6,6 +6,10 @@ import com.Skill.Marketplace.SM.Entities.UserSkill;
 import com.Skill.Marketplace.SM.Services.UserSkillService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SearchResult;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -59,21 +63,20 @@ public class UserSkillController {
 
     @PreAuthorize("hasAnyRole('CONSUMER','PROVIDER')" )
     @GetMapping("/search")
-    public List<searchResultDTO> searchProviders(@RequestParam String skill) {
+    public ResponseEntity<?> searchProviders(@RequestParam String skill , @PageableDefault(size = 10,sort="rate")Pageable pageable){
 
-        List<UserSkill> results = userSkillService.searchProvidersBySkill(skill);
+        Page<UserSkill> page = userSkillService.searchProvidersBySkill(skill,pageable);
 
-        return results.stream()
-                .map(userSkill -> new searchResultDTO(
-                        userSkill.getUser().getId(),
-                        userSkill.getUser().getUsername(),
-                        userSkill.getSkill().getSkillName(),
-                        userSkill.getRate(),
-                        userSkill.getDescription(),
-                        userSkill.getExperience(),
-                        userSkill.getServiceMode().name()
-                ))
-                .toList();
+        Page<searchResultDTO> dtoPage = page.map(userSkill -> new searchResultDTO(
+                userSkill.getUser().getId(),
+                userSkill.getUser().getUsername(),
+                userSkill.getSkill().getSkillName(),
+                userSkill.getRate(),
+                userSkill.getDescription(),
+                userSkill.getExperience(),
+                userSkill.getServiceMode().name()
+        ));
+        return ResponseEntity.ok(dtoPage);
     }
 }
 

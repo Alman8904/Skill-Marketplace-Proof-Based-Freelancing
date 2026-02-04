@@ -2,9 +2,10 @@ package com.Skill.Marketplace.SM.Repo;
 import com.Skill.Marketplace.SM.Entities.Skill;
 import com.Skill.Marketplace.SM.Entities.UserModel;
 import com.Skill.Marketplace.SM.Entities.UserSkill;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,12 +16,15 @@ public interface UserSkillRepo extends JpaRepository<UserSkill, Long> {
 
     Optional<UserSkill> findByUserAndSkill(UserModel user, Skill skill);
 
+
     @Query("""
     SELECT us FROM UserSkill us
-    WHERE LOWER(us.skill.skillName) LIKE LOWER(CONCAT('%', :skillName, '%'))
-    AND us.isActive = true
+    JOIN us.skill s
+    JOIN us.user u
+    WHERE LOWER(s.skillName) LIKE LOWER(CONCAT('%', :skillName, '%'))
 """)
-    List<UserSkill> searchBySkillName(@Param("skillName") String skillName);
+    Page<UserSkill> findBySkill_SkillNameContainingIgnoreCase(String skillName, Pageable pageable);
+
 
 
 
