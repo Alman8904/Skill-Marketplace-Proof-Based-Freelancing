@@ -1,7 +1,12 @@
 package com.Skill.Marketplace.SM.Controllers;
 import com.Skill.Marketplace.SM.DTO.OrderDTO.createOrderDTO;
+import com.Skill.Marketplace.SM.DTO.OrderDTO.deliverWorkDTO;
 import com.Skill.Marketplace.SM.DTO.OrderDTO.orderDetailsDTO;
 import com.Skill.Marketplace.SM.Entities.Order;
+import com.Skill.Marketplace.SM.Entities.PaymentStatus;
+import com.Skill.Marketplace.SM.Exception.ConflictException;
+import com.Skill.Marketplace.SM.Repo.OrderRepo;
+import com.Skill.Marketplace.SM.Services.MockPaymentService;
 import com.Skill.Marketplace.SM.Services.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/orders")
@@ -19,6 +25,10 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private OrderRepo orderRepo;
+    @Autowired
+    private MockPaymentService mockPaymentService;
 
     @PreAuthorize("hasRole('CONSUMER') or hasRole('PROVIDER')")
     @PostMapping("/place")
@@ -46,6 +56,11 @@ public class OrderController {
     @PostMapping("/accept")
     public ResponseEntity<?> acceptOrder(@RequestParam Long orderId, @RequestParam String deadline) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Order order = orderRepo.findById(orderId).orElseThrow();
+
+        if (order.getMockPaymentStatus() != PaymentStatus.AUTHORIZED)
+            throw new ConflictException("Payment not authorized yet");
+
 
         LocalDateTime date = LocalDateTime.parse(deadline);
         orderService.acceptOrder(orderId, username, date);
@@ -71,6 +86,64 @@ public class OrderController {
         orderService.deliverOrder(orderId, username);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('PROVIDER')")
+    @PostMapping("/start-work")
+    public ResponseEntity<?> startWork(@RequestParam Long orderId) {
+        String username  = SecurityContextHolder.getContext().getAuthentication().getName();
+        orderService.startWork(orderId, username);
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "Work started on order ",
+                        "orderId", orderId
+                )
+        );
+    }
+
+    @PreAuthorize("hasRole('PROVIDER')")
+    @PostMapping("/deliver-work")
+    public ResponseEntity<?> deliverWork(@Valid @RequestBody deliverWorkDTO deliverDTO) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        orderService.deliverWork(
+                deliverDTO.getOrderId(),
+                username,
+                deliverDTO.getDeliveryNotes(),
+                deliverDTO.getDeliveryUrl()
+        );
+
+        return ResponseEntity.ok(
+                        Map.of(
+                                "message", "Work delivered for order ",
+                                "orderId", deliverDTO.getOrderId()
+                )
+        );
+    }
+
+    @PreAuthorize("hasRole('CONSUMER')")
+    @PostMapping("/approve-delivery")
+    public ResponseEntity<?> approveDelivery(@RequestParam Long orderId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        orderService.approveDelivery(orderId, username);
+
+        Order order = orderRepo.findById(orderId).orElseThrow();
+
+        try{
+            mockPaymentService.capturePayment(orderId);
+        } catch (Exception e) {
+            System.err.println("Failed to capture payment for order " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "Delivery approved for order ",
+                        "orderId", orderId,
+                        "amountReleased", order.getAgreedPrice()
+                )
+        );
     }
 
     @PreAuthorize("hasRole('CONSUMER')")

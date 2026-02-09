@@ -45,7 +45,27 @@ public class Order {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) {
-            status = OrderStatus.PAYMENT_PENDING;
+            status = OrderStatus.PENDING;
         }
     }
+
+    @Column(length = 100)
+    private String deliveryNotes;
+
+    @Column(length=500)
+    private String deliveryUrl;
+
+    private LocalDateTime deliveredAt;
+
+    private LocalDateTime approvedAt;
+
+
+    @Column(length=100)
+    private String mockPaymentId;
+
+    @Column(length=100)
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus mockPaymentStatus=PaymentStatus.PENDING;
+
+
 }

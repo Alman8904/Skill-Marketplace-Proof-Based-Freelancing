@@ -30,6 +30,9 @@ public class OrderService {
     @Autowired
     private OrderRepo orderRepo;
 
+    @Autowired
+    private MockPaymentService mockPaymentService;
+
     public Order placeOrder(String username , createOrderDTO orderDTO) {
 
         UserModel consumer = userRepo.getUserByUsername(username)
@@ -59,7 +62,8 @@ public class OrderService {
         order.setDescription(orderDTO.getDescription());
         order.setEstimatedHours(orderDTO.getEstimatedHours());
         order.setAgreedPrice(listing.getRate()*orderDTO.getEstimatedHours());
-        order.setStatus(OrderStatus.PAYMENT_PENDING);
+        order.setStatus(OrderStatus.PENDING);
+        order.setMockPaymentStatus(PaymentStatus.PENDING);
 
         return orderRepo.save(order);
     }
@@ -111,8 +115,61 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.PENDING)
             throw new ConflictException("Cannot cancel now");
 
+        if (order.getMockPaymentStatus() == PaymentStatus.AUTHORIZED) {
+            mockPaymentService.refundPayment(orderId);
+        }
         order.setStatus(OrderStatus.CANCELLED);
+        orderRepo.save(order);
 
+    }
+
+    @Transactional
+    public void startWork(Long orderId, String username) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getProvider().getUsername().equals(username))
+            throw new ForbiddenException("Not authorized");
+
+        if (order.getStatus() != OrderStatus.ACCEPTED)
+            throw new ConflictException("Cannot start work now");
+
+        order.setStatus(OrderStatus.IN_PROGRESS);
+        orderRepo.save(order);
+    }
+
+    @Transactional
+    public void deliverWork(Long orderId, String username, String deliveryNote, String deliveryUrl) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getProvider().getUsername().equals(username))
+            throw new ForbiddenException("Not authorized");
+
+        if (order.getStatus() != OrderStatus.IN_PROGRESS && order.getStatus() != OrderStatus.ACCEPTED)
+            throw new ConflictException("Cannot deliver work now");
+
+        order.setDeliveryNotes(deliveryNote);
+        order.setDeliveryUrl(deliveryUrl);
+        order.setStatus(OrderStatus.DELIVERED);
+        orderRepo.save(order);
+    }
+
+    @Transactional
+    public void approveDelivery(Long orderId, String username) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getConsumer().getUsername().equals(username))
+            throw new ForbiddenException("Not authorized");
+
+        if (order.getStatus() != OrderStatus.DELIVERED)
+            throw new ConflictException("Order must be delivered first");
+
+        order.setApprovedAt(LocalDateTime.now());
+        order.setStatus(OrderStatus.COMPLETED);
+        order.setCompletedAt(LocalDateTime.now());
+        orderRepo.save(order);
     }
 
     public List<Order> getMyOrders(String username) {
@@ -122,7 +179,5 @@ public class OrderService {
     public List<Order> getReceivedOrders(String username) {
         return orderRepo.findByProvider_Username(username);
     }
-
-
 
 }

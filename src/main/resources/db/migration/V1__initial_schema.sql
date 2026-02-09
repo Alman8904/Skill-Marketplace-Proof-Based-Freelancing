@@ -72,7 +72,7 @@ CREATE TABLE orders (
         REFERENCES skill(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    CONSTRAINT chk_order_status CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
+    CONSTRAINT chk_order_status CHECK (status IN ('PENDING', 'ACCEPTED',  'IN_PROGRESS','DELIVERED', 'COMPLETED', 'CANCELLED'))
 );
 
 -- Create indexes for better query performance
