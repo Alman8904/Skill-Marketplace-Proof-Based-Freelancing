@@ -1,8 +1,9 @@
 package com.Skill.Marketplace.SM.Controllers;
-import com.Skill.Marketplace.SM.DTO.categoryDTO.CategoryResponseDTO;
-import com.Skill.Marketplace.SM.DTO.skillDTO.CreateSkillDTO;
-import com.Skill.Marketplace.SM.DTO.skillDTO.SkillResponseDTO;
-import com.Skill.Marketplace.SM.DTO.skillDTO.UpdateSkillDTO;
+
+import com.Skill.Marketplace.SM.DTO.CategoryDTO.CategoryResponseDTO;
+import com.Skill.Marketplace.SM.DTO.SkillDTO.CreateSkillDTO;
+import com.Skill.Marketplace.SM.DTO.SkillDTO.SkillResponseDTO;
+import com.Skill.Marketplace.SM.DTO.SkillDTO.UpdateSkillDTO;
 import com.Skill.Marketplace.SM.Entities.Skill;
 import com.Skill.Marketplace.SM.Services.SkillService;
 import jakarta.validation.Valid;
@@ -12,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/admin/skills")
@@ -23,7 +23,7 @@ public class SkillController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> createSkill(@Valid @RequestBody CreateSkillDTO dto){
+    public ResponseEntity<?> createSkill(@Valid @RequestBody CreateSkillDTO dto) {
         Skill savedSkill = skillService.create(dto);
         return ResponseEntity.ok(
                 new SkillResponseDTO(
@@ -38,7 +38,7 @@ public class SkillController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getSkillById(@PathVariable Long id){
+    public ResponseEntity<?> getSkillById(@PathVariable Long id) {
         Skill skill = skillService.getById(id);
         return ResponseEntity.ok(
                 new SkillResponseDTO(
@@ -53,7 +53,7 @@ public class SkillController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllSkills(Pageable pageable){
+    public ResponseEntity<?> getAllSkills(Pageable pageable) {
         Page<Skill> page = skillService.getAll(pageable);
 
         Page<SkillResponseDTO> dtoPage = page.map(
@@ -71,7 +71,7 @@ public class SkillController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateSkill(@PathVariable Long id , @Valid @RequestBody UpdateSkillDTO dto){
+    public ResponseEntity<?> updateSkill(@PathVariable Long id, @Valid @RequestBody UpdateSkillDTO dto) {
         skillService.update(id, dto);
         return ResponseEntity.ok(
                 new SkillResponseDTO(
@@ -84,7 +84,7 @@ public class SkillController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSkillById(@PathVariable Long id){
+    public ResponseEntity<?> deleteSkillById(@PathVariable Long id) {
         skillService.delete(id);
         return ResponseEntity.noContent().build();
     }

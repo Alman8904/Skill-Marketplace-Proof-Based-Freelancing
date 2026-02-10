@@ -1,23 +1,21 @@
 package com.Skill.Marketplace.SM.Services;
-import com.Skill.Marketplace.SM.DTO.UserSkillDTO.updateUserSkillDTO;
+
 import com.Skill.Marketplace.SM.DTO.UserSkillDTO.AssignSkillDTO;
+import com.Skill.Marketplace.SM.DTO.UserSkillDTO.UpdateUserSkillDTO;
 import com.Skill.Marketplace.SM.Entities.*;
 import com.Skill.Marketplace.SM.Exception.ForbiddenException;
 import com.Skill.Marketplace.SM.Exception.ResourceNotFoundException;
 import com.Skill.Marketplace.SM.Repo.SkillsRepo;
 import com.Skill.Marketplace.SM.Repo.UserRepo;
 import com.Skill.Marketplace.SM.Repo.UserSkillRepo;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 public class UserSkillService {
@@ -73,7 +71,7 @@ public class UserSkillService {
     }
 
     @Transactional
-    public void updateUserSkill(Long userSkillId, String username, updateUserSkillDTO skillData) {
+    public void updateUserSkill(Long userSkillId, String username, UpdateUserSkillDTO skillData) {
         UserSkill userSkill = userSkillRepo.findById(userSkillId)
                 .orElseThrow(() -> new ResourceNotFoundException("UserSkill not found"));
 
@@ -97,7 +95,6 @@ public class UserSkillService {
     }
 
 
-
     public Page<UserSkill> searchProvidersBySkill(
             String skill,
             Double minRate,
@@ -110,7 +107,7 @@ public class UserSkillService {
                 userSkillRepo.searchBySkill(skill, pageable);
 
         List<UserSkill> filtered = page.getContent().stream()
-                .filter(us->us.isActive())
+                .filter(us -> us.isActive())
                 .filter(us -> minRate == null || us.getRate() >= minRate)
                 .filter(us -> maxRate == null || us.getRate() <= maxRate)
                 .filter(us -> serviceMode == null || us.getServiceMode() == serviceMode)
@@ -119,4 +116,4 @@ public class UserSkillService {
 
         return new PageImpl<>(filtered, pageable, page.getTotalElements());
     }
-    }
+}

@@ -1,7 +1,9 @@
 package com.Skill.Marketplace.SM.Entities;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.util.List;
 
 @Data
@@ -20,7 +22,7 @@ public class Skill {
     private Category category;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "skill" )
+    @OneToMany(mappedBy = "skill")
     private List<UserSkill> userSkills;
 
 }

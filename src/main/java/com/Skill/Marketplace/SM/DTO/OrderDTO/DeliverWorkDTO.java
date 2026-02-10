@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.DTO.OrderDTO;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class deliverWorkDTO {
+public class DeliverWorkDTO {
 
     @NotNull(message = "Order ID cannot be null")
     private Long orderId;

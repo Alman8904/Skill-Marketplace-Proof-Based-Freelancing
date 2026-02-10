@@ -1,4 +1,5 @@
-package com.Skill.Marketplace.SM.DTO.userDTO;
+package com.Skill.Marketplace.SM.DTO.UserDTO;
+
 import com.Skill.Marketplace.SM.Entities.UserType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -6,17 +7,16 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class CreateUserDTO {
+public class UpdateUserDTO {
 
-    @NotBlank(message = "Username is mandatory")
-    @Size(min=3, max=20)
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50)
     private String username;
+    @NotBlank(message = "Password is required")
+    @Size(min = 8)
+    private String password;
     private String firstName;
     private String lastName;
-
-    @NotBlank(message = "Password is mandatory")
-    @Size(min=8)
-    private String password;
-    @NotNull(message = "User type is mandatory")
+    @NotNull(message = "User type is required")
     private UserType userType;
 }

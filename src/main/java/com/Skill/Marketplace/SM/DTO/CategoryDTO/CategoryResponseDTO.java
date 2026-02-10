@@ -1,5 +1,5 @@
-package com.Skill.Marketplace.SM.DTO.categoryDTO;
-import jakarta.validation.constraints.NotNull;
+package com.Skill.Marketplace.SM.DTO.CategoryDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

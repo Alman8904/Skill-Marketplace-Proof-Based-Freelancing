@@ -1,5 +1,6 @@
 package com.Skill.Marketplace.SM.Services;
-import com.Skill.Marketplace.SM.DTO.OrderDTO.createOrderDTO;
+
+import com.Skill.Marketplace.SM.DTO.OrderDTO.CreateOrderDTO;
 import com.Skill.Marketplace.SM.Entities.*;
 import com.Skill.Marketplace.SM.Exception.BadRequestException;
 import com.Skill.Marketplace.SM.Exception.ConflictException;
@@ -12,6 +13,7 @@ import com.Skill.Marketplace.SM.Repo.UserSkillRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class OrderService {
     @Autowired
     private MockPaymentService mockPaymentService;
 
-    public Order placeOrder(String username , createOrderDTO orderDTO) {
+    public Order placeOrder(String username, CreateOrderDTO orderDTO) {
 
         UserModel consumer = userRepo.getUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -51,7 +53,7 @@ public class OrderService {
         UserSkill listing = userSkillRepo.findByUserAndSkillAndIsActiveTrue(provider, skill)
                 .orElseThrow(() -> new BadRequestException("Provider does not offer this skill"));
 
-        if(orderDTO.getEstimatedHours() <= 0) {
+        if (orderDTO.getEstimatedHours() <= 0) {
             throw new BadRequestException("Estimated hours must be greater than zero");
         }
 
@@ -61,7 +63,7 @@ public class OrderService {
         order.setSkill(skill);
         order.setDescription(orderDTO.getDescription());
         order.setEstimatedHours(orderDTO.getEstimatedHours());
-        order.setAgreedPrice(listing.getRate()*orderDTO.getEstimatedHours());
+        order.setAgreedPrice(listing.getRate() * orderDTO.getEstimatedHours());
         order.setStatus(OrderStatus.PENDING);
         order.setMockPaymentStatus(PaymentStatus.PENDING);
 
@@ -77,10 +79,10 @@ public class OrderService {
         if (!order.getProvider().getUsername().equals(username))
             throw new ForbiddenException("Not authorized");
 
-        if(order.getStatus() != OrderStatus.PENDING)
+        if (order.getStatus() != OrderStatus.PENDING)
             throw new ConflictException("Order is not ready for acceptance");
 
-        if(deadline.isBefore(LocalDateTime.now().plusHours(1)))
+        if (deadline.isBefore(LocalDateTime.now().plusHours(1)))
             throw new BadRequestException("Deadline must be at least 1 hour from now");
 
         order.setDeadline(deadline);
@@ -95,7 +97,7 @@ public class OrderService {
         if (!order.getProvider().getUsername().equals(username))
             throw new ForbiddenException("Not authorized");
 
-        if(order.getStatus() != OrderStatus.ACCEPTED)
+        if (order.getStatus() != OrderStatus.ACCEPTED)
             throw new ConflictException("Order must be accepted first");
 
         order.setStatus(OrderStatus.DELIVERED);
@@ -107,7 +109,7 @@ public class OrderService {
     @Transactional
     public void cancelOrder(Long orderId, String username) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getConsumer().getUsername().equals(username))
             throw new ForbiddenException("Not authorized");
@@ -126,7 +128,7 @@ public class OrderService {
     @Transactional
     public void startWork(Long orderId, String username) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getProvider().getUsername().equals(username))
             throw new ForbiddenException("Not authorized");
@@ -141,7 +143,7 @@ public class OrderService {
     @Transactional
     public void deliverWork(Long orderId, String username, String deliveryNote, String deliveryUrl) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getProvider().getUsername().equals(username))
             throw new ForbiddenException("Not authorized");
@@ -158,7 +160,7 @@ public class OrderService {
     @Transactional
     public void approveDelivery(Long orderId, String username) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!order.getConsumer().getUsername().equals(username))
             throw new ForbiddenException("Not authorized");

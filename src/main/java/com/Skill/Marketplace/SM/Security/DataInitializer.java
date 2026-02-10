@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.Security;
+
 import com.Skill.Marketplace.SM.Entities.UserModel;
 import com.Skill.Marketplace.SM.Entities.UserType;
 import com.Skill.Marketplace.SM.Repo.UserRepo;

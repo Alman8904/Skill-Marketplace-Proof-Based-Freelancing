@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.Services;
+
 import com.Skill.Marketplace.SM.Entities.Order;
 import com.Skill.Marketplace.SM.Entities.PaymentStatus;
 import com.Skill.Marketplace.SM.Entities.UserModel;
@@ -9,6 +10,7 @@ import com.Skill.Marketplace.SM.Repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.UUID;
 
 @Service
@@ -31,7 +33,7 @@ public class MockPaymentService {
     }
 
 
-     // Authorize payment (hold funds in escrow)
+    // Authorize payment (hold funds in escrow)
 
     @Transactional
     public String authorizePayment(Long orderId, String username, Double amount) {
@@ -62,7 +64,7 @@ public class MockPaymentService {
     }
 
 
-     //Capture payment (release funds to provider)
+    //Capture payment (release funds to provider)
 
     @Transactional
     public void capturePayment(Long orderId) {
@@ -88,7 +90,7 @@ public class MockPaymentService {
     }
 
 
-     // Refund payment (return funds to consumer)
+    // Refund payment (return funds to consumer)
     @Transactional
     public void refundPayment(Long orderId) {
 
@@ -112,7 +114,7 @@ public class MockPaymentService {
     }
 
 
-     // Get wallet balance for a user
+    // Get wallet balance for a user
 
     public Double getWalletBalance(String username) {
         UserModel user = userRepo.getUserByUsername(username)

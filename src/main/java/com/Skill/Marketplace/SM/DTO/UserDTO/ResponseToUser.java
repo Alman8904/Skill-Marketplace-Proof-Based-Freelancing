@@ -1,4 +1,5 @@
-package com.Skill.Marketplace.SM.DTO.userDTO;
+package com.Skill.Marketplace.SM.DTO.UserDTO;
+
 import com.Skill.Marketplace.SM.Entities.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Data;

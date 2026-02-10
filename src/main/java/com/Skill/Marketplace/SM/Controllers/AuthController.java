@@ -1,7 +1,8 @@
 package com.Skill.Marketplace.SM.Controllers;
-import com.Skill.Marketplace.SM.DTO.userDTO.CreateUserDTO;
-import com.Skill.Marketplace.SM.DTO.userDTO.LoginDTO;
-import com.Skill.Marketplace.SM.DTO.userDTO.ResponseToUser;
+
+import com.Skill.Marketplace.SM.DTO.UserDTO.CreateUserDTO;
+import com.Skill.Marketplace.SM.DTO.UserDTO.LoginDTO;
+import com.Skill.Marketplace.SM.DTO.UserDTO.ResponseToUser;
 import com.Skill.Marketplace.SM.Entities.UserModel;
 import com.Skill.Marketplace.SM.Services.AuthService;
 import com.Skill.Marketplace.SM.Services.UserService;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -23,12 +23,11 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-
     @Autowired
     private UserService userService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createUser (@Valid @RequestBody CreateUserDTO request){
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserDTO request) {
 
         UserModel user = userService.createNewUser(request);
         return ResponseEntity.ok(

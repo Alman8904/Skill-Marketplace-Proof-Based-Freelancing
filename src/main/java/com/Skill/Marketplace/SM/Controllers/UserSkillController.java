@@ -1,7 +1,8 @@
 package com.Skill.Marketplace.SM.Controllers;
-import com.Skill.Marketplace.SM.DTO.SearchDTO.searchResultDTO;
-import com.Skill.Marketplace.SM.DTO.UserSkillDTO.updateUserSkillDTO;
+
+import com.Skill.Marketplace.SM.DTO.SearchDTO.SearchResultDTO;
 import com.Skill.Marketplace.SM.DTO.UserSkillDTO.AssignSkillDTO;
+import com.Skill.Marketplace.SM.DTO.UserSkillDTO.UpdateUserSkillDTO;
 import com.Skill.Marketplace.SM.Entities.ServiceMode;
 import com.Skill.Marketplace.SM.Entities.UserSkill;
 import com.Skill.Marketplace.SM.Services.UserSkillService;
@@ -26,33 +27,33 @@ public class UserSkillController {
 
     @PreAuthorize("hasRole('PROVIDER')")
     @PostMapping("/assign")
-    public ResponseEntity<?> assignSkillToUser( @Valid @RequestBody AssignSkillDTO dto){
+    public ResponseEntity<?> assignSkillToUser(@Valid @RequestBody AssignSkillDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        userSkillService.assignSkills(username ,dto);
+        userSkillService.assignSkills(username, dto);
         return ResponseEntity.ok("Skill(s) assigned to user");
     }
 
-    @PreAuthorize("hasRole('PROVIDER')" )
+    @PreAuthorize("hasRole('PROVIDER')")
     @GetMapping("/all-userSkills")
-    public ResponseEntity<?> getSkillsByUser(){
+    public ResponseEntity<?> getSkillsByUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         return ResponseEntity.ok(userSkillService.getSkillsByUser(username));
     }
 
-    @PreAuthorize("hasRole('PROVIDER')" )
+    @PreAuthorize("hasRole('PROVIDER')")
     @PutMapping("/update/{userSkillId}")
-    public ResponseEntity<?> updateUserSkill(@PathVariable Long userSkillId, @Valid @RequestBody updateUserSkillDTO dto){
+    public ResponseEntity<?> updateUserSkill(@PathVariable Long userSkillId, @Valid @RequestBody UpdateUserSkillDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        userSkillService.updateUserSkill(userSkillId, username , dto);
+        userSkillService.updateUserSkill(userSkillId, username, dto);
         return ResponseEntity.ok("UserSkill updated successfully");
     }
 
-    @PreAuthorize("hasRole('PROVIDER')" )
+    @PreAuthorize("hasRole('PROVIDER')")
     @DeleteMapping("/deactivate/{userSkillId}")
-    public ResponseEntity<?> deactivateUserSkill(@PathVariable Long userSkillId){
+    public ResponseEntity<?> deactivateUserSkill(@PathVariable Long userSkillId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         userSkillService.deactivateUserSkill(userSkillId, username);
@@ -60,7 +61,7 @@ public class UserSkillController {
     }
 
 
-    @PreAuthorize("hasAnyRole('CONSUMER','PROVIDER')" )
+    @PreAuthorize("hasAnyRole('CONSUMER','PROVIDER')")
     @GetMapping("/search")
     public ResponseEntity<?> searchProviders(
             @RequestParam String skill,
@@ -74,7 +75,7 @@ public class UserSkillController {
                 skill, minRate, maxRate, serviceMode, minExperience, pageable
         );
 
-        return ResponseEntity.ok(page.map(us -> new searchResultDTO(
+        return ResponseEntity.ok(page.map(us -> new SearchResultDTO(
                 us.getUser().getId(),
                 us.getUser().getUsername(),
                 us.getSkill().getSkillName(),

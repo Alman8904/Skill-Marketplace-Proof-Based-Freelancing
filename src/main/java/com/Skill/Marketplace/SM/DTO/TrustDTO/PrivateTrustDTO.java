@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.DTO.TrustDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

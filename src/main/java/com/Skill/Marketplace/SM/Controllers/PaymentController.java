@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.Controllers;
+
 import com.Skill.Marketplace.SM.DTO.paymentDTO.AddFundsDTO;
 import com.Skill.Marketplace.SM.DTO.paymentDTO.PaymentInitiateDTO;
 import com.Skill.Marketplace.SM.Entities.Order;
@@ -13,10 +14,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
 @RestController
@@ -29,7 +30,7 @@ public class PaymentController {
     @Autowired
     private OrderRepo orderRepo;
 
-     // Add funds to wallet
+    // Add funds to wallet
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/add-funds")
     public ResponseEntity<?> addFunds(@Valid @RequestBody AddFundsDTO addFundsDTO) {
@@ -46,7 +47,7 @@ public class PaymentController {
     }
 
 
-     // Get wallet balance
+    // Get wallet balance
     @GetMapping("/wallet-balance")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getWalletBalance() {
@@ -61,7 +62,7 @@ public class PaymentController {
     }
 
 
-     //Authorize payment for an order (holds funds in escrow)
+    //Authorize payment for an order (holds funds in escrow)
     @PreAuthorize("hasRole('CONSUMER')")
     @PostMapping("/authorize")
     @Transactional
@@ -104,7 +105,7 @@ public class PaymentController {
     }
 
 
-     // Refund payment if order cancelled
+    // Refund payment if order cancelled
     @PreAuthorize("hasRole('CONSUMER')")
     @PostMapping("/refund")
     @Transactional

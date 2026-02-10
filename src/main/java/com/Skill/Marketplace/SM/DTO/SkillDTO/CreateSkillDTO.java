@@ -1,10 +1,11 @@
-package com.Skill.Marketplace.SM.DTO.skillDTO;
+package com.Skill.Marketplace.SM.DTO.SkillDTO;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class UpdateSkillDTO {
+public class CreateSkillDTO {
 
     @NotBlank(message = "Skill name is required")
     private String skillName;

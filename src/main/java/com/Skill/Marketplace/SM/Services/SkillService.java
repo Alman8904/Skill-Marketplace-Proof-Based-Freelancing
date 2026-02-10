@@ -1,6 +1,7 @@
 package com.Skill.Marketplace.SM.Services;
-import com.Skill.Marketplace.SM.DTO.skillDTO.CreateSkillDTO;
-import com.Skill.Marketplace.SM.DTO.skillDTO.UpdateSkillDTO;
+
+import com.Skill.Marketplace.SM.DTO.SkillDTO.CreateSkillDTO;
+import com.Skill.Marketplace.SM.DTO.SkillDTO.UpdateSkillDTO;
 import com.Skill.Marketplace.SM.Entities.Category;
 import com.Skill.Marketplace.SM.Entities.Skill;
 import com.Skill.Marketplace.SM.Exception.BadRequestException;
@@ -22,14 +23,14 @@ public class SkillService {
     @Autowired
     private CategoryRepo categoryRepo;
 
-    public Skill create(CreateSkillDTO dto){
+    public Skill create(CreateSkillDTO dto) {
 
-        if(dto.getSkillName()==null || dto.getSkillName().isEmpty()){
+        if (dto.getSkillName() == null || dto.getSkillName().isEmpty()) {
             throw new BadRequestException("Skill name is required");
         }
 
         Category category = categoryRepo.findById(dto.getCategoryId())
-                .orElseThrow(()-> new ResourceNotFoundException("No Category found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No Category found"));
 
         Skill skill = new Skill();
         skill.setSkillName(dto.getSkillName());
@@ -39,37 +40,37 @@ public class SkillService {
         return skillsRepo.save(skill);
     }
 
-    public Skill getById(Long id){
+    public Skill getById(Long id) {
         return skillsRepo.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException("No skills found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No skills found"));
     }
 
-    public Page<Skill> getAll(Pageable pageable){
+    public Page<Skill> getAll(Pageable pageable) {
         return skillsRepo.findAll(pageable);
     }
 
-    public Skill update(Long id , UpdateSkillDTO dto){
+    public Skill update(Long id, UpdateSkillDTO dto) {
         Skill skill = skillsRepo.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("No skills found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No skills found"));
 
-        if(dto.getSkillName()==null || dto.getSkillName().isEmpty()){
+        if (dto.getSkillName() == null || dto.getSkillName().isEmpty()) {
             throw new BadRequestException("Skill name is required");
         }
 
         skill.setSkillName(dto.getSkillName());
 
 
-        Category category =  categoryRepo.findById(dto.getCategoryId())
-                .orElseThrow(()-> new ResourceNotFoundException("No category found"));
+        Category category = categoryRepo.findById(dto.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("No category found"));
         skill.setCategory(category);
 
         return skillsRepo.save(skill);
 
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
 
-        if(!skillsRepo.existsById(id)){
+        if (!skillsRepo.existsById(id)) {
             throw new ResourceNotFoundException("No skills found");
         }
         skillsRepo.deleteById(id);

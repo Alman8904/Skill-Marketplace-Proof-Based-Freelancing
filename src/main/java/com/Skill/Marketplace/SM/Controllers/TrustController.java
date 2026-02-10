@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.Controllers;
+
 import com.Skill.Marketplace.SM.Services.TrustService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

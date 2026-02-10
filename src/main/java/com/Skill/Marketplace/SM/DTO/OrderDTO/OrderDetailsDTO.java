@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.DTO.OrderDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class orderDetailsDTO {
+public class OrderDetailsDTO {
     private Long orderId;
     private String consumerName;
     private String providerName;

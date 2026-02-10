@@ -1,6 +1,6 @@
 package com.Skill.Marketplace.SM.Services;
 
-import com.Skill.Marketplace.SM.DTO.userDTO.CreateUserDTO;
+import com.Skill.Marketplace.SM.DTO.UserDTO.CreateUserDTO;
 import com.Skill.Marketplace.SM.Entities.UserModel;
 import com.Skill.Marketplace.SM.Entities.UserType;
 import com.Skill.Marketplace.SM.Repo.UserRepo;

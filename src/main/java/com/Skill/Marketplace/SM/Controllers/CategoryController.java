@@ -1,7 +1,8 @@
 package com.Skill.Marketplace.SM.Controllers;
-import com.Skill.Marketplace.SM.DTO.categoryDTO.CategoryResponseDTO;
-import com.Skill.Marketplace.SM.DTO.categoryDTO.CreateCategoryDTO;
-import com.Skill.Marketplace.SM.DTO.categoryDTO.UpdateCategoryDTO;
+
+import com.Skill.Marketplace.SM.DTO.CategoryDTO.CategoryResponseDTO;
+import com.Skill.Marketplace.SM.DTO.CategoryDTO.CreateCategoryDTO;
+import com.Skill.Marketplace.SM.DTO.CategoryDTO.UpdateCategoryDTO;
 import com.Skill.Marketplace.SM.Entities.Category;
 import com.Skill.Marketplace.SM.Services.CategoryService;
 import jakarta.validation.Valid;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 
@@ -22,7 +24,7 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> createCategory(@Valid @RequestBody CreateCategoryDTO request){
+    public ResponseEntity<?> createCategory(@Valid @RequestBody CreateCategoryDTO request) {
 
         Category savedCategory = categoryService.create(request);
 
@@ -35,7 +37,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCategoryById(@PathVariable Long id){
+    public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         Category category = categoryService.getById(id);
         return ResponseEntity.ok(
                 new CategoryResponseDTO(
@@ -46,9 +48,9 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllCategories(){
+    public ResponseEntity<?> getAllCategories() {
         List<Category> categories = categoryService.getAll();
-        List<CategoryResponseDTO> response  = categories.stream().map(
+        List<CategoryResponseDTO> response = categories.stream().map(
                 category -> new CategoryResponseDTO(
                         category.getCategoryId(),
                         category.getCategoryName()
@@ -59,7 +61,7 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id , @Valid @RequestBody UpdateCategoryDTO dto){
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody UpdateCategoryDTO dto) {
 
         categoryService.update(id, dto);
 
@@ -73,8 +75,8 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategoryById(@PathVariable Long id){
-         categoryService.delete(id);
+    public ResponseEntity<?> deleteCategoryById(@PathVariable Long id) {
+        categoryService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

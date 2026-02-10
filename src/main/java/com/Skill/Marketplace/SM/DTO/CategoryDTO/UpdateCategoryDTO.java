@@ -1,9 +1,10 @@
-package com.Skill.Marketplace.SM.DTO.categoryDTO;
+package com.Skill.Marketplace.SM.DTO.CategoryDTO;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CreateCategoryDTO {
+public class UpdateCategoryDTO {
     @NotBlank(message = "Category name is required")
     private String categoryName;
 }

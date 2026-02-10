@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.Services;
+
 import com.Skill.Marketplace.SM.DTO.TrustDTO.PrivateTrustDTO;
 import com.Skill.Marketplace.SM.DTO.TrustDTO.PublicTrustDTO;
 import com.Skill.Marketplace.SM.Entities.Order;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 
 
 @Service
@@ -32,7 +32,7 @@ public class TrustService {
     }
 
 
-    public PublicTrustDTO getProviderTrustPublic(String username){
+    public PublicTrustDTO getProviderTrustPublic(String username) {
         List<Order> orders = orderRepo.findByProvider_Username(username);
 
         long accepted = orders.stream()
@@ -51,7 +51,7 @@ public class TrustService {
                 .filter(o -> o.getMockPaymentStatus() == PaymentStatus.REFUNDED)
                 .count();
 
-        double completionRate = accepted == 0 ? 0.0 : (double) (completed * 100) / accepted ;
+        double completionRate = accepted == 0 ? 0.0 : (double) (completed * 100) / accepted;
 
         String badge = deriveBadge(completionRate, refunds, orders.size());
 
@@ -64,7 +64,7 @@ public class TrustService {
         );
     }
 
-    public PublicTrustDTO getConsumerTrustPublic(String username){
+    public PublicTrustDTO getConsumerTrustPublic(String username) {
         List<Order> orders = orderRepo.findByConsumer_Username(username);
 
         long completed = orders.stream()
@@ -79,7 +79,7 @@ public class TrustService {
                 .filter(o -> o.getMockPaymentStatus() == PaymentStatus.REFUNDED)
                 .count();
 
-        double completionRate = orders.isEmpty() ? 0.0 : (double) (completed * 100) / orders.size() ;
+        double completionRate = orders.isEmpty() ? 0.0 : (double) (completed * 100) / orders.size();
 
         String badge = deriveBadge(completionRate, refunds, orders.size());
 
@@ -92,7 +92,7 @@ public class TrustService {
         );
     }
 
-    public PrivateTrustDTO getMyTrust(String username){
+    public PrivateTrustDTO getMyTrust(String username) {
         List<Order> providerOrders = orderRepo.findByProvider_Username(username);
         List<Order> consumerOrders = orderRepo.findByConsumer_Username(username);
 

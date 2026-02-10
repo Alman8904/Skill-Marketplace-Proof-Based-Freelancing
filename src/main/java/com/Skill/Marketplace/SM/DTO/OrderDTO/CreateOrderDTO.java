@@ -1,11 +1,12 @@
 package com.Skill.Marketplace.SM.DTO.OrderDTO;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class createOrderDTO {
+public class CreateOrderDTO {
 
     @NotNull(message = "Provider ID is required")
     private Long providerId;

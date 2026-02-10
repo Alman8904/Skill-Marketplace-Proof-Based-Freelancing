@@ -1,5 +1,6 @@
-package com.Skill.Marketplace.SM.DTO.skillDTO;
-import com.Skill.Marketplace.SM.DTO.categoryDTO.CategoryResponseDTO;
+package com.Skill.Marketplace.SM.DTO.SkillDTO;
+
+import com.Skill.Marketplace.SM.DTO.CategoryDTO.CategoryResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

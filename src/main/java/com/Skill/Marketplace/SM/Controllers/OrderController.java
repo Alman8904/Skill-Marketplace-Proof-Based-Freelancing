@@ -1,7 +1,8 @@
 package com.Skill.Marketplace.SM.Controllers;
-import com.Skill.Marketplace.SM.DTO.OrderDTO.createOrderDTO;
-import com.Skill.Marketplace.SM.DTO.OrderDTO.deliverWorkDTO;
-import com.Skill.Marketplace.SM.DTO.OrderDTO.orderDetailsDTO;
+
+import com.Skill.Marketplace.SM.DTO.OrderDTO.CreateOrderDTO;
+import com.Skill.Marketplace.SM.DTO.OrderDTO.DeliverWorkDTO;
+import com.Skill.Marketplace.SM.DTO.OrderDTO.OrderDetailsDTO;
 import com.Skill.Marketplace.SM.Entities.Order;
 import com.Skill.Marketplace.SM.Entities.PaymentStatus;
 import com.Skill.Marketplace.SM.Exception.ConflictException;
@@ -32,13 +33,13 @@ public class OrderController {
 
     @PreAuthorize("hasRole('CONSUMER') or hasRole('PROVIDER')")
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(@Valid @RequestBody createOrderDTO orderDTO) {
+    public ResponseEntity<?> placeOrder(@Valid @RequestBody CreateOrderDTO orderDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Order order =orderService.placeOrder(username, orderDTO);
+        Order order = orderService.placeOrder(username, orderDTO);
 
         return ResponseEntity.ok(
-                new orderDetailsDTO(
+                new OrderDetailsDTO(
                         order.getOrderId(),
                         order.getConsumer().getUsername(),
                         order.getProvider().getUsername(),
@@ -91,7 +92,7 @@ public class OrderController {
     @PreAuthorize("hasRole('PROVIDER')")
     @PostMapping("/start-work")
     public ResponseEntity<?> startWork(@RequestParam Long orderId) {
-        String username  = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         orderService.startWork(orderId, username);
 
         return ResponseEntity.ok(
@@ -104,7 +105,7 @@ public class OrderController {
 
     @PreAuthorize("hasRole('PROVIDER')")
     @PostMapping("/deliver-work")
-    public ResponseEntity<?> deliverWork(@Valid @RequestBody deliverWorkDTO deliverDTO) {
+    public ResponseEntity<?> deliverWork(@Valid @RequestBody DeliverWorkDTO deliverDTO) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         orderService.deliverWork(
@@ -115,9 +116,9 @@ public class OrderController {
         );
 
         return ResponseEntity.ok(
-                        Map.of(
-                                "message", "Work delivered for order ",
-                                "orderId", deliverDTO.getOrderId()
+                Map.of(
+                        "message", "Work delivered for order ",
+                        "orderId", deliverDTO.getOrderId()
                 )
         );
     }
@@ -131,7 +132,7 @@ public class OrderController {
 
         Order order = orderRepo.findById(orderId).orElseThrow();
 
-        try{
+        try {
             mockPaymentService.capturePayment(orderId);
         } catch (Exception e) {
             System.err.println("Failed to capture payment for order " + e.getMessage());
@@ -155,7 +156,7 @@ public class OrderController {
         return ResponseEntity.ok(
                 orderService.getMyOrders(username)
                         .stream()
-                        .map(order -> new orderDetailsDTO(
+                        .map(order -> new OrderDetailsDTO(
                                 order.getOrderId(),
                                 order.getConsumer().getUsername(),
                                 order.getProvider().getUsername(),
@@ -182,7 +183,7 @@ public class OrderController {
         return ResponseEntity.ok(
                 orderService.getReceivedOrders(username)
                         .stream()
-                        .map(order -> new orderDetailsDTO(
+                        .map(order -> new OrderDetailsDTO(
                                 order.getOrderId(),
                                 order.getConsumer().getUsername(),
                                 order.getProvider().getUsername(),

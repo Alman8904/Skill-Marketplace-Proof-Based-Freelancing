@@ -1,4 +1,5 @@
 package com.Skill.Marketplace.SM.Entities;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ public class UserSkill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userSkillId;
 
-    @Column(nullable = false , length = 100)
+    @Column(nullable = false, length = 100)
     private String description;
 
     @Column(nullable = false)
@@ -20,17 +21,17 @@ public class UserSkill {
     private int experience;
 
     @Column(nullable = false)
-    private boolean isActive=true;
+    private boolean isActive = true;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ServiceMode serviceMode;
 
     @ManyToOne
-    @JoinColumn(name="user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
     @ManyToOne
-    @JoinColumn(name="skill_id", nullable = false)
+    @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
 }
