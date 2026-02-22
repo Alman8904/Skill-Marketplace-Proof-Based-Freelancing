@@ -121,6 +121,12 @@ public class PaymentController {
             throw new ForbiddenException("Not authorized");
         }
 
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new BadRequestException(
+                    "Cannot refund — order is already " + order.getStatus().name()
+            );
+        }
+
         // Verify payment exists and is authorized
         if (order.getMockPaymentStatus() != PaymentStatus.AUTHORIZED) {
             throw new BadRequestException("No authorized payment found for this order");
