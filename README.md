@@ -2,12 +2,16 @@
 
 A **reputation-based freelancing platform** REST API built with Spring Boot. Consumers hire providers for specific skills, payments are held in escrow until work is approved, and every user builds a public trust profile automatically from their order history.
 
-> 🖥️ **Frontend repo:** (https://github.com/Alman8904/Skill-Marketplace-Frontend.git)  
-> 📖 **Live API Docs:**  (https://skill-marketplace-reputation-based.onrender.com/swagger-ui/index.html)
+
+📖 **Live API Docs:** https://skill-marketplace-reputation-based.onrender.com/swagger-ui/index.html
+
+🌐 **Live App:** https://skill-marketplace.onrender.com
+
+🖥️ **Frontend Repo:** https://github.com/Alman8904/Skill-Marketplace-Frontend
+
+> First request may take ~30 seconds to wake up — hosted on free tier.
 
 ---
-
-
 
 ## How It Works
 
@@ -19,7 +23,7 @@ A **reputation-based freelancing platform** REST API built with Spring Boot. Con
 6. **Provider accepts** the order (only possible after payment is authorized) and sets a deadline
 7. **Provider starts work** → status moves to `IN_PROGRESS`
 8. **Provider delivers** → submits delivery notes and a URL
-9. **Consumer approves** → funds released to provider wallet → order is `COMPLETED`
+9. **Consumer approves** → funds released to provider wallet atomically → order is `COMPLETED`
 10. **Trust scores** are computed automatically from order history — no manual ratings needed
 
 ---
@@ -40,6 +44,35 @@ A **reputation-based freelancing platform** REST API built with Spring Boot. Con
 | Containerization | Docker (multi-stage build) |
 | Utilities | Lombok |
 | Testing | JUnit 5, Mockito |
+| Scheduling | Spring @Scheduled |
+
+---
+
+## Key Features
+
+### Escrow Payment System
+Money moves in three steps only — authorize → capture → (or) refund. Funds are locked between authorization and delivery approval, protecting both parties.
+
+### Abuse Protections
+- `deliveryUrl` hidden from consumer until order is COMPLETED — prevents taking work without paying
+- Refund blocked once provider has accepted — consumer cannot pull funds mid-job
+- Provider acceptance blocked until payment is authorized
+- Delivery URL validated with `@Pattern` — must start with `http://` or `https://`, cannot be blank
+
+### Automated Expiry Scheduler
+`OrderExpiryScheduler` runs every hour and handles two stuck-money scenarios:
+- **Provider missed deadline** — order is ACCEPTED or IN_PROGRESS and deadline has passed → auto-refund consumer, cancel order
+- **Consumer ghosted after delivery** — order has been DELIVERED for more than 3 days → auto-capture payment to provider, complete order
+
+### Trust & Reputation System
+Scores calculated automatically from order history — no star ratings needed.
+
+| Badge | Criteria |
+|---|---|
+| `NEW` | No order history yet |
+| `TRUSTED` | Completion rate ≥ 80% and zero refunds |
+| `NEUTRAL` | Completion rate ≥ 50% |
+| `RISKY` | Completion rate < 50% or significant refunds |
 
 ---
 
@@ -67,6 +100,7 @@ src/main/java/com/Skill/Marketplace/SM/
 │   ├── UserSkillService       Provider listings + filtered search
 │   ├── OrderService           Full order lifecycle
 │   ├── MockPaymentService     Wallet + escrow simulation
+│   ├── OrderExpiryScheduler   Hourly auto-refund + auto-capture
 │   └── TrustService           Reputation score calculation
 │
 ├── Entities/             ← JPA entities + enums
@@ -209,11 +243,13 @@ Skills support pagination: `?page=0&size=10&sort=skillName`
 | Param | Type | Required | Description |
 |---|---|---|---|
 | `skill` | string | ✅ | Skill name (partial match) |
-| `minRate` | double | ❌ | Minimum hourly rate |
-| `maxRate` | double | ❌ | Maximum hourly rate |
+| `minRate` | double | ❌ | Minimum hourly rate in ₹ |
+| `maxRate` | double | ❌ | Maximum hourly rate in ₹ |
 | `serviceMode` | `REMOTE` / `LOCAL` | ❌ | Filter by service mode |
 | `minExperience` | int | ❌ | Minimum years of experience |
 | `page`, `size`, `sort` | Pageable | ❌ | Default: size=10, sort=rate |
+
+> Filters are applied in the database query — pagination counts are always accurate.
 
 ---
 
@@ -226,11 +262,11 @@ Skills support pagination: `?page=0&size=10&sort=skillName`
 | `POST` | `/orders/cancel?orderId=` | `CONSUMER` | Cancel PENDING order (auto-refunds if payment was authorized) |
 | `POST` | `/orders/start-work?orderId=` | `PROVIDER` | Move to IN_PROGRESS |
 | `POST` | `/orders/deliver-work` | `PROVIDER` | Submit delivery notes + URL |
-| `POST` | `/orders/approve-delivery?orderId=` | `CONSUMER` | Approve delivery → releases payment to provider |
-| `GET` | `/orders/my-orders` | `CONSUMER` | Orders you placed |
+| `POST` | `/orders/approve-delivery?orderId=` | `CONSUMER` | Approve delivery → releases payment atomically |
+| `GET` | `/orders/my-orders` | `CONSUMER` | Orders you placed (deliveryUrl hidden until COMPLETED) |
 | `GET` | `/orders/received-orders` | `PROVIDER` | Orders assigned to you |
 
-> **Note:** A provider can only accept an order **after** the consumer has called `/payment/authorize`. The endpoint enforces this — it will reject acceptance if `mockPaymentStatus != AUTHORIZED`.
+> A provider can only accept an order after the consumer has called `/payment/authorize`. The endpoint enforces this — it will reject acceptance if `mockPaymentStatus != AUTHORIZED`.
 
 ---
 
@@ -238,10 +274,10 @@ Skills support pagination: `?page=0&size=10&sort=skillName`
 
 | Method | Path | Role | Description |
 |---|---|---|---|
-| `POST` | `/payment/add-funds` | Any | Add funds to your wallet |
+| `POST` | `/payment/add-funds` | Any | Add funds to your wallet (max ₹1,00,000 per transaction) |
 | `GET` | `/payment/wallet-balance` | Any | Check your wallet balance |
 | `POST` | `/payment/authorize` | `CONSUMER` | Authorize payment for an order (holds funds in escrow) |
-| `POST` | `/payment/refund?orderId=` | `CONSUMER` | Manually refund an authorized payment + cancel order |
+| `POST` | `/payment/refund?orderId=` | `CONSUMER` | Refund — only allowed while order is still PENDING |
 
 **Authorize body:**
 ```json
@@ -250,7 +286,8 @@ Skills support pagination: `?page=0&size=10&sort=skillName`
   "amount": 150.00
 }
 ```
-Amount must exactly match `agreedPrice` on the order.
+
+> Amount must exactly match `agreedPrice` on the order. Refund is blocked once a provider has accepted — this prevents consumers from pulling funds out mid-job.
 
 ---
 
@@ -277,40 +314,7 @@ Amount must exactly match `agreedPrice` on the order.
 
 ---
 
-## Trust & Reputation System
-
-Trust scores are **calculated automatically** from order history — no star ratings or manual input needed.
-
-### Public Score Fields
-
-| Field | Description |
-|---|---|
-| `completedOrders` | Total orders completed |
-| `cancelledOrders` | Total orders cancelled |
-| `refunds` | Number of refunded payments |
-| `completionRate` | `(completed / accepted) × 100` for providers |
-| `badge` | Reputation badge |
-
-### Badge Logic
-
-| Badge | Criteria |
-|---|---|
-| `NEW` | No order history yet |
-| `TRUSTED` | Completion rate ≥ 80% **and** zero refunds |
-| `NEUTRAL` | Completion rate ≥ 50% |
-| `RISKY` | Completion rate < 50% or significant refunds |
-
-### Private Breakdown (`/trust/me`)
-
-Returns both sides of your activity:
-- **As provider:** total jobs, completed jobs, completion rate, badge
-- **As consumer:** total jobs, refunds, refund rate
-
----
-
 ## Payment Flow
-
-The system implements an **escrow model** — money is held between authorization and delivery approval.
 
 ```
 Consumer adds funds to wallet
@@ -326,12 +330,12 @@ Provider accepts order (blocked until payment = AUTHORIZED)
          │
          ▼
 Provider delivers → Consumer approves
-  ├── Funds added to provider wallet
+  ├── Funds added to provider wallet (atomically in same @Transactional)
   └── mockPaymentStatus = CAPTURED
 
   ─── OR ───
 
-Consumer cancels (while PENDING)
+Consumer cancels (while PENDING only)
   ├── Funds returned to consumer wallet
   └── mockPaymentStatus = REFUNDED
 ```
@@ -351,17 +355,17 @@ Consumer cancels (while PENDING)
 [Provider accepts + sets deadline]
          │
          ▼
-      ACCEPTED
+      ACCEPTED ──► Auto-cancelled if provider misses deadline (consumer refunded)
          │
 [Provider starts work]
          │
          ▼
-    IN_PROGRESS
+    IN_PROGRESS ──► Auto-cancelled if deadline passes (consumer refunded)
          │
 [Provider delivers (notes + URL)]
          │
          ▼
-     DELIVERED
+     DELIVERED ──► Auto-completed after 3 days if consumer doesn't approve (provider paid)
          │
 [Consumer approves delivery]
          │
@@ -377,15 +381,15 @@ Consumer cancels (while PENDING)
 
 | Role | Permissions |
 |---|---|
-| `CONSUMER` | Place orders, authorize/refund payments, cancel pending orders, approve deliveries, search providers, view trust scores |
+| `CONSUMER` | Place orders, authorize/refund payments (PENDING only), cancel pending orders, approve deliveries, search providers, view trust scores |
 | `PROVIDER` | List skills, accept/start/deliver orders, view received orders |
 | `ADMIN` | Create/update/delete categories and skills. Auto-created on startup via `DataInitializer`. |
 
 **CORS is pre-configured for:**
 - `http://localhost:5173` (local dev)
-- `https://skill-marketplace-frontend.onrender.com` (production — update this to your domain)
+- `https://skill-marketplace.onrender.com` (production)
 
-**Exception handling** is centralized in `GlobalExceptionHandler` with consistent HTTP status codes:
+**Exception handling** is centralized in `GlobalExceptionHandler`:
 
 | Exception | Status |
 |---|---|
@@ -430,7 +434,7 @@ export ADMIN_PASSWORD=yourAdminPassword123
 ./mvnw spring-boot:run
 ```
 
-Flyway auto-runs all migrations. The admin user is created automatically on first boot if it doesn't exist.
+Flyway auto-runs all migrations. The admin user is created automatically on first boot.
 
 | URL | Description |
 |---|---|
@@ -462,8 +466,6 @@ openssl rand -base64 64
 
 ## Running with Docker
 
-A multi-stage Dockerfile is included — builds with Maven, runs with a minimal JRE image.
-
 ```bash
 # Build
 docker build -t skill-marketplace-api .
@@ -479,16 +481,13 @@ docker run -p 8080:8080 \
   skill-marketplace-api
 ```
 
+---
+
 ## Running Tests
 
 ```bash
 ./mvnw test
 ```
 
-Current test coverage (JUnit 5 + Mockito):
 - `AuthServiceTest` — login flow with mocked JWT and UserDetailsService
 - `UserServiceTest` — user CRUD operations
-
----
-
-`
